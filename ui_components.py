@@ -36,7 +36,12 @@ class Button:
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
     def is_clicked(self, event):
-        return event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.is_hovered
+        """Vérifie si le bouton est cliqué en utilisant la position de l'événement."""
+        # On vérifie si l'événement est un clic gauche et si la position du clic est dans le rectangle du bouton.
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
 
 
 class TextInputBox:

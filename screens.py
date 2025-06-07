@@ -69,20 +69,20 @@ def draw_editeur_deck_screen(surface, current_deck, available_cards, buttons, te
     # Zone de la collection (à gauche)
     collection_rect = pygame.Rect(20, 80, 750, SCREEN_HEIGHT - 100)
     pygame.draw.rect(surface, WHITE, collection_rect, border_radius=10)
-    draw_text("Collection (clic pour ajouter)", 'small', BLACK, surface, collection_rect.centerx, 50)
+    draw_text("Collection (clic pour ajouter)", 'small', BLACK, surface, collection_rect.centerx, 75)
 
     # Zone du deck (à droite)
     deck_rect = pygame.Rect(collection_rect.right + 20, 80, SCREEN_WIDTH - collection_rect.right - 40,
                             SCREEN_HEIGHT - 100)
     pygame.draw.rect(surface, WHITE, deck_rect, border_radius=10)
-    draw_text(f"Deck ({len(current_deck)}/20) (clic pour retirer)", 'small', BLACK, surface, deck_rect.centerx, 50)
+    draw_text(f"Deck ({len(current_deck)}/20) (clic pour retirer)", 'small', BLACK, surface, deck_rect.centerx, 75)
 
     # Filtres
     text_input.draw(surface)
     for btn in filter_buttons.values():
         btn.draw(surface)
 
-    # Affichage des cartes disponibles (la logique de création des boutons est maintenant dans main.py)
+    # Affichage des cartes disponibles
     x, y = collection_rect.left + 10, collection_rect.top + 50
     for i, card_name in enumerate(available_cards):
         card_rect = pygame.Rect(x, y, CARD_WIDTH, CARD_HEIGHT)
@@ -92,7 +92,7 @@ def draw_editeur_deck_screen(surface, current_deck, available_cards, buttons, te
             x = collection_rect.left + 10
             y += CARD_HEIGHT + 5
 
-    # Affichage des cartes du deck (la logique de création des boutons est maintenant dans main.py)
+    # Affichage des cartes du deck
     x, y = deck_rect.left + 10, deck_rect.top + 10
     for i, card_name in enumerate(current_deck):
         card_rect = pygame.Rect(x, y, CARD_WIDTH * 0.7, CARD_HEIGHT * 0.7)

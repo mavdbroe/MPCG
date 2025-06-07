@@ -167,7 +167,6 @@ while running:
                             if f'supprimer_{i}' in buttons and buttons[f'supprimer_{i}'].is_clicked(event):
                                 decks[i] = None
                                 save_decks(decks)
-                                # On doit re-créer les boutons pour cet écran
                                 setup_buttons_for_state(game_state)
                                 break
 
@@ -212,7 +211,6 @@ while running:
 
             if state_changed:
                 setup_buttons_for_state(game_state)
-                # Si l'état a changé, on arrête de traiter les événements de cette frame
                 break
 
     # --- Mise à jour du survol ---
@@ -231,7 +229,6 @@ while running:
     elif game_state == "apercu_deck":
         screens.draw_apercu_deck_screen(screen, decks[active_deck_index], buttons)
     elif game_state == "editeur_deck":
-        # On passe les boutons de filtres séparément pour la fonction de dessin
         filter_btns = {k: v for k, v in buttons.items() if k.startswith('filter_')}
         screens.draw_editeur_deck_screen(screen, current_deck_build, available_cards_in_editor, buttons,
                                          name_filter_input, filter_btns)
