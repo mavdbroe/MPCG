@@ -1,0 +1,244 @@
+### main.py ###
+
+import pygame
+import sys
+from config import *
+from card_database import CARD_DATA, load_card_images
+from data_manager import load_decks, save_decks
+from ui_components import Button, TextInputBox
+import screens
+
+# --- Initialisation ---
+pygame.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Pokémon TCG Pocket - Projet Corrigé")
+clock = pygame.time.Clock()
+
+# --- Polices ---
+FONTS['default'] = pygame.font.Font(None, 32)
+FONTS['small'] = pygame.font.Font(None, 18)
+FONTS['title'] = pygame.font.Font(None, 74)
+FONTS['subtitle'] = pygame.font.Font(None, 42)
+FONTS['button'] = pygame.font.Font(None, 36)
+
+# --- Chargement des données ---
+load_card_images()
+decks = load_decks()
+
+# --- Variables d'état ---
+game_state = "accueil"
+active_deck_index = -1
+current_deck_build = []
+buttons = {}
+
+# --- Variables pour l'éditeur ---
+name_filter_input = TextInputBox(25, 10, 200, 40, font_name='default')
+filter_type = "Tous"
+available_cards_in_editor = list(CARD_DATA.keys())
+
+
+def apply_filters():
+    global available_cards_in_editor
+    name_query = name_filter_input.text.lower()
+
+    filtered_list = []
+    for name, data in CARD_DATA.items():
+        if name_query and name_query not in name.lower():
+            continue
+        if filter_type != "Tous" and data['type'] != filter_type:
+            continue
+        filtered_list.append(name)
+    available_cards_in_editor = sorted(filtered_list)
+
+
+def setup_buttons_for_state(state):
+    """Crée les boutons statiques nécessaires pour un état de jeu donné."""
+    buttons.clear()
+    if state == "menu":
+        buttons['gerer_deck'] = Button(SCREEN_WIDTH / 2 - 200, 250, 400, 80, "Gérer les Decks")
+
+    elif state == "gestion_deck":
+        buttons['retour'] = Button(20, 20, 150, 60, "Retour", color=RED)
+        for i in range(3):
+            if decks[i] is None:
+                buttons[f'creer_{i}'] = Button(SCREEN_WIDTH - 280, 175 + i * 130, 150, 60, "Créer", color=GREEN)
+            else:
+                buttons[f'apercu_{i}'] = Button(SCREEN_WIDTH - 600, 175 + i * 130, 150, 60, "Aperçu", color=BLUE)
+                buttons[f'modifier_{i}'] = Button(SCREEN_WIDTH - 440, 175 + i * 130, 150, 60, "Modifier", color=YELLOW)
+                buttons[f'supprimer_{i}'] = Button(SCREEN_WIDTH - 280, 175 + i * 130, 150, 60, "Supprimer", color=RED)
+
+    elif state == "apercu_deck":
+        buttons['retour_gestion'] = Button(20, 20, 150, 60, "Retour", color=RED)
+
+    elif state == "editeur_deck":
+        buttons['sauvegarder'] = Button(SCREEN_WIDTH - 170, 10, 150, 60, "Sauvegarder", color=GREEN)
+        buttons['annuler'] = Button(SCREEN_WIDTH - 340, 10, 150, 60, "Annuler", color=RED)
+        buttons['filter_tous'] = Button(250, 10, 100, 40, "Tous")
+        buttons['filter_pokemon'] = Button(360, 10, 100, 40, "Pokémon")
+        buttons['filter_dresseur'] = Button(470, 10, 120, 40, "Dresseur")
+        buttons['filter_energie'] = Button(600, 10, 100, 40, "Énergie")
+
+
+# --- Boucle principale ---
+setup_buttons_for_state(game_state)
+running = True
+while running:
+    events = pygame.event.get()
+
+    # --- Mise à jour des boutons dynamiques (pour l'éditeur) ---
+    if game_state == "editeur_deck":
+        # D'abord, on retire les anciens boutons de cartes pour ne pas les accumuler
+        keys_to_remove = [k for k in buttons if k.startswith('collection_') or k.startswith('deck_')]
+        for k in keys_to_remove:
+            del buttons[k]
+
+        # Ensuite, on crée les boutons uniquement pour les cartes visibles
+        # Boutons pour la collection
+        x, y = 20 + 10, 80 + 50
+        for i, card_name in enumerate(available_cards_in_editor):
+            card_rect = pygame.Rect(x, y, CARD_WIDTH, CARD_HEIGHT)
+            buttons[f'collection_{card_name}_{i}'] = Button(x, y, CARD_WIDTH, CARD_HEIGHT, '')
+            buttons[f'collection_{card_name}_{i}'].rect = card_rect
+            x += CARD_WIDTH + 5
+            if x + CARD_WIDTH > 20 + 750 - 10:
+                x = 20 + 10
+                y += CARD_HEIGHT + 5
+
+        # Boutons pour le deck en cours
+        x, y = 790 + 10, 80 + 10
+        for i, card_name in enumerate(current_deck_build):
+            card_rect = pygame.Rect(x, y, CARD_WIDTH * 0.7, CARD_HEIGHT * 0.7)
+            buttons[f'deck_{card_name}_{i}'] = Button(x, y, card_rect.width, card_rect.height, '')
+            buttons[f'deck_{card_name}_{i}'].rect = card_rect
+            y += 30
+            if y + 30 > 80 + SCREEN_HEIGHT - 100 - 10:
+                y = 80 + 10
+                x += card_rect.width + 5
+
+    # --- Gestion des événements ---
+    for event in events:
+        if event.type == pygame.QUIT:
+            running = False
+
+        # On donne la priorité à la saisie de texte
+        if game_state == "editeur_deck":
+            name_filter_input.handle_event(event)
+            if event.type == pygame.KEYDOWN:
+                apply_filters()
+
+        # Gestion des clics
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            state_changed = False
+
+            if game_state == "accueil":
+                game_state = "menu"
+                state_changed = True
+
+            elif game_state == "menu":
+                if buttons['gerer_deck'].is_clicked(event):
+                    game_state = "gestion_deck"
+                    state_changed = True
+
+            elif game_state == "gestion_deck":
+                if buttons['retour'].is_clicked(event):
+                    game_state = "menu"
+                    state_changed = True
+                else:
+                    for i in range(3):
+                        if decks[i] is None:
+                            if f'creer_{i}' in buttons and buttons[f'creer_{i}'].is_clicked(event):
+                                active_deck_index = i
+                                current_deck_build = []
+                                game_state = "editeur_deck"
+                                state_changed = True
+                                break
+                        else:
+                            if f'apercu_{i}' in buttons and buttons[f'apercu_{i}'].is_clicked(event):
+                                active_deck_index = i
+                                game_state = "apercu_deck"
+                                state_changed = True
+                                break
+                            if f'modifier_{i}' in buttons and buttons[f'modifier_{i}'].is_clicked(event):
+                                active_deck_index = i
+                                current_deck_build = list(decks[i])
+                                game_state = "editeur_deck"
+                                state_changed = True
+                                break
+                            if f'supprimer_{i}' in buttons and buttons[f'supprimer_{i}'].is_clicked(event):
+                                decks[i] = None
+                                save_decks(decks)
+                                # On doit re-créer les boutons pour cet écran
+                                setup_buttons_for_state(game_state)
+                                break
+
+            elif game_state == "apercu_deck":
+                if buttons['retour_gestion'].is_clicked(event):
+                    game_state = "gestion_deck"
+                    state_changed = True
+
+            elif game_state == "editeur_deck":
+                # On vérifie d'abord les boutons statiques
+                if buttons['sauvegarder'].is_clicked(event):
+                    decks[active_deck_index] = list(current_deck_build)
+                    save_decks(decks)
+                    game_state = "gestion_deck"
+                    state_changed = True
+                elif buttons['annuler'].is_clicked(event):
+                    game_state = "gestion_deck"
+                    state_changed = True
+                elif buttons['filter_tous'].is_clicked(event):
+                    filter_type = "Tous"; apply_filters()
+                elif buttons['filter_pokemon'].is_clicked(event):
+                    filter_type = "Pokémon"; apply_filters()
+                elif buttons['filter_dresseur'].is_clicked(event):
+                    filter_type = "Dresseur"; apply_filters()
+                elif buttons['filter_energie'].is_clicked(event):
+                    filter_type = "Énergie"; apply_filters()
+
+                if not state_changed:
+                    # Clic sur une carte de la collection pour l'ajouter
+                    for key, btn in list(buttons.items()):
+                        if key.startswith("collection_") and btn.is_clicked(event):
+                            if len(current_deck_build) < 20:
+                                card_name = key.split('_')[1]
+                                current_deck_build.append(card_name)
+
+                    # Clic sur une carte du deck pour la retirer
+                    for key, btn in list(buttons.items()):
+                        if key.startswith("deck_") and btn.is_clicked(event):
+                            card_index_in_deck = int(key.split('_')[2])
+                            del current_deck_build[card_index_in_deck]
+                            break
+
+            if state_changed:
+                setup_buttons_for_state(game_state)
+                # Si l'état a changé, on arrête de traiter les événements de cette frame
+                break
+
+    # --- Mise à jour du survol ---
+    mouse_pos = pygame.mouse.get_pos()
+    for button in buttons.values():
+        button.check_hover(mouse_pos)
+
+    # --- Dessin ---
+    screen.fill(BLACK)
+    if game_state == "accueil":
+        screens.draw_accueil_screen(screen)
+    elif game_state == "menu":
+        screens.draw_menu_screen(screen, buttons)
+    elif game_state == "gestion_deck":
+        screens.draw_gestion_deck_screen(screen, decks, buttons)
+    elif game_state == "apercu_deck":
+        screens.draw_apercu_deck_screen(screen, decks[active_deck_index], buttons)
+    elif game_state == "editeur_deck":
+        # On passe les boutons de filtres séparément pour la fonction de dessin
+        filter_btns = {k: v for k, v in buttons.items() if k.startswith('filter_')}
+        screens.draw_editeur_deck_screen(screen, current_deck_build, available_cards_in_editor, buttons,
+                                         name_filter_input, filter_btns)
+
+    pygame.display.flip()
+    clock.tick(60)
+
+# --- Fin ---
+pygame.quit()
+sys.exit()
