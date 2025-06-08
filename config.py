@@ -22,6 +22,20 @@ RED = (200, 50, 50)
 GREEN = (50, 200, 50)
 YELLOW = (255, 223, 0)
 
+# --- Couleurs d'Énergie ---
+ENERGY_COLORS = {
+    'rouge': (220, 20, 60),
+    'jaune': (255, 215, 0),
+    'bleu': (70, 130, 180),
+    'mauve': (153, 50, 204),
+    'vert': (60, 179, 113),
+    'orange': (255, 140, 0),
+    'pourpre': (139, 0, 139),
+    'gris': (128, 128, 128),
+    'rose': (255, 105, 180),
+    'noir': (30, 30, 30)
+}
+
 # --- Polices (initialisées dans main.py) ---
 FONTS = {}
 

@@ -18,7 +18,6 @@ def generate_placeholder_image(name, path):
         placeholder_surf.fill(GRAY)
         pygame.draw.rect(placeholder_surf, BLACK, placeholder_surf.get_rect(), 2)
 
-        # S'assurer que FONTS est initialisé
         if 'small' not in FONTS:
             FONTS['small'] = pygame.font.Font(None, 18)
 
@@ -58,10 +57,6 @@ CARD_DATA = {
     "Professeur Keteleeria": {"type": "Dresseur", "trainer_type": "Supporter",
                               "text": "Défaussez votre main et piochez 7 cartes.",
                               "image": get_image_path("Keteleeria.png")},
-    "Énergie Foudre": {"type": "Énergie", "energy_type": "Foudre", "image": get_image_path("Energie_Foudre.png")},
-    "Énergie Plante": {"type": "Énergie", "energy_type": "Plante", "image": get_image_path("Energie_Plante.png")},
-    "Énergie Feu": {"type": "Énergie", "energy_type": "Feu", "image": get_image_path("Energie_Feu.png")},
-    "Énergie Eau": {"type": "Énergie", "energy_type": "Eau", "image": get_image_path("Energie_Eau.png")},
 }
 
 CARD_IMAGES = {}
@@ -71,13 +66,12 @@ def load_card_images():
     """Charge toutes les images de cartes en mémoire."""
     for name, data in CARD_DATA.items():
         path = data['image']
-        generate_placeholder_image(name, path)  # Crée une image si elle n'existe pas
+        generate_placeholder_image(name, path)
         try:
             image = pygame.image.load(path).convert_alpha()
             CARD_IMAGES[name] = pygame.transform.scale(image, (CARD_WIDTH, CARD_HEIGHT))
         except pygame.error as e:
             print(f"Impossible de charger l'image {path}: {e}")
-            # Crée une surface vide en cas d'erreur de chargement
             error_surf = pygame.Surface((CARD_WIDTH, CARD_HEIGHT))
             error_surf.fill(RED)
             CARD_IMAGES[name] = error_surf

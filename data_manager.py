@@ -4,13 +4,18 @@ import os
 from config import DECK_FILE
 
 def load_decks():
-    """Charge les decks depuis un fichier JSON s'il existe."""
+    """Charge les decks depuis un fichier JSON et valide leur structure."""
     if os.path.exists(DECK_FILE):
         try:
             with open(DECK_FILE, 'r') as f:
                 decks_data = json.load(f)
-                # S'assurer que c'est une liste de 3 éléments
                 if isinstance(decks_data, list) and len(decks_data) == 3:
+                    # Vérification de la structure de chaque deck non-vide
+                    for deck in decks_data:
+                        if deck is not None:
+                            if not isinstance(deck, dict) or 'cards' not in deck or 'energies' not in deck:
+                                print(f"Avertissement: Structure de deck invalide dans {DECK_FILE}. Réinitialisation.")
+                                return [None, None, None]
                     return decks_data
                 else:
                     return [None, None, None]

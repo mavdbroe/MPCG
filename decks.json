@@ -1,5 +1,41 @@
 [
-    null,
-    null,
+    {
+        "cards": [
+            "Pikachu",
+            "Pikachu",
+            "Bulbizarre",
+            "Bulbizarre",
+            "Salam\u00e8che",
+            "Salam\u00e8che",
+            "Carapuce",
+            "Carapuce",
+            "Potion",
+            "Potion",
+            "Potion",
+            "Potion",
+            "Potion",
+            "Potion",
+            "Potion",
+            "Potion",
+            "Professeur Keteleeria",
+            "Professeur Keteleeria",
+            "Professeur Keteleeria",
+            "Professeur Keteleeria"
+        ],
+        "energies": [
+            "mauve",
+            "pourpre",
+            "rose"
+        ]
+    },
+    {
+        "cards": [
+            "Pikachu",
+            "Pikachu"
+        ],
+        "energies": [
+            "jaune"
+        ]
+    },
     null
 ]
