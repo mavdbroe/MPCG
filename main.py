@@ -12,7 +12,7 @@ import screens
 # --- Initialisation ---
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Pokémon TCG Pocket - Projet Corrigé")
+pygame.display.set_caption("Pokémon TCG Pocket")
 clock = pygame.time.Clock()
 
 # --- Polices ---
@@ -302,7 +302,6 @@ while running:
         screens.draw_accueil_screen(screen)
     elif game_state == "menu":
         screens.draw_menu_screen(screen, buttons)
-    # --- Affichage des nouveaux écrans ---
     elif game_state == "deck_selection_p1":
         screens.draw_deck_selection_screen(screen, 1, decks, buttons, is_deck_valid)
     elif game_state == "deck_selection_p2":

@@ -28,7 +28,6 @@ def draw_menu_screen(surface, buttons):
         button.draw(surface)
 
 
-# --- Écran de sélection de deck ---
 def draw_deck_selection_screen(surface, player_num, decks, buttons, validation_func):
     surface.fill(WHITE)
     draw_text(f"Joueur {player_num}, choisissez votre deck", 'title', BLACK, surface, SCREEN_WIDTH / 2, 80)
@@ -60,44 +59,72 @@ def draw_deck_selection_screen(surface, player_num, decks, buttons, validation_f
 def draw_game_board_screen(surface, buttons, starting_player):
     surface.fill((50, 100, 70))  # Un fond vert pour le plateau
 
-    # Message du joueur qui commence
-    draw_text(f"Joueur {starting_player} commence la partie !", 'subtitle', WHITE, surface, SCREEN_WIDTH / 2, 20)
-
-    # --- Zones du Joueur 2 (Adversaire - en haut) ---
-    # Main (face cachée)
-    for i in range(5):
-        pygame.draw.rect(surface, BLACK, (SCREEN_WIDTH / 2 - 125 + i * 50, 50, 45, 60), border_radius=5)
-    # Banc, Deck, Défausse
-    p2_bench_y = 130
-    pygame.draw.rect(surface, DARK_GRAY, (20, p2_bench_y, 100, 60), border_radius=5)  # Deck
-    draw_text("Deck", "small", WHITE, surface, 70, p2_bench_y + 30)
-    pygame.draw.rect(surface, DARK_GRAY, (130, p2_bench_y, 100, 60), border_radius=5)  # Défausse
-    draw_text("Défausse", "small", WHITE, surface, 180, p2_bench_y + 30)
-    pygame.draw.circle(surface, RED, (265, p2_bench_y + 30), 15)  # Energie
-    for i in range(3):
-        pygame.draw.rect(surface, (150, 10, 120), (SCREEN_WIDTH / 2 - 185 + i * 125, p2_bench_y, 120, 160), 3,
-                         border_radius=10)
-    # Actif
-    pygame.draw.rect(surface, (250, 200, 0), (SCREEN_WIDTH / 2 - 60, p2_bench_y + 170, 120, 160), 3, border_radius=10)
+    # --- Définition des dimensions et positions ---
+    slot_w, slot_h = 80, 110
+    hand_w, hand_h = 80, 110
+    gap = 15
 
     # --- Zones du Joueur 1 (Vous - en bas) ---
-    p1_y_offset = SCREEN_HEIGHT - 200
-    # Actif
-    pygame.draw.rect(surface, (250, 200, 0), (SCREEN_WIDTH / 2 - 60, p1_y_offset - 170, 120, 160), 3, border_radius=10)
-    # Banc, Deck, Défausse
-    for i in range(3):
-        pygame.draw.rect(surface, (10, 150, 120), (SCREEN_WIDTH / 2 - 185 + i * 125, p1_y_offset, 120, 160), 3,
-                         border_radius=10)
-    pygame.draw.rect(surface, DARK_GRAY, (SCREEN_WIDTH - 230, p1_y_offset, 100, 60), border_radius=5)  # Défausse
-    draw_text("Défausse", "small", WHITE, surface, SCREEN_WIDTH - 180, p1_y_offset + 30)
-    pygame.draw.rect(surface, DARK_GRAY, (SCREEN_WIDTH - 120, p1_y_offset, 100, 60), border_radius=5)  # Deck
-    draw_text("Deck", "small", WHITE, surface, SCREEN_WIDTH - 70, p1_y_offset + 30)
-    pygame.draw.circle(surface, RED, (SCREEN_WIDTH - 265, p1_y_offset + 30), 15)  # Energie
-    # Main
-    for i in range(5):
-        pygame.draw.rect(surface, GRAY, (SCREEN_WIDTH / 2 - 125 + i * 50, SCREEN_HEIGHT - 70, 45, 60), border_radius=5)
+    p1_hand_y = SCREEN_HEIGHT - hand_h - gap
+    p1_bench_y = p1_hand_y - slot_h - gap
+    p1_active_y = p1_bench_y - slot_h - gap
 
-    # Bouton Abandon
+    # Main
+    num_hand_cards = 5
+    hand_total_width = (num_hand_cards * hand_w) + ((num_hand_cards - 1) * 10)
+    hand_start_x = (SCREEN_WIDTH - hand_total_width) / 2
+    for i in range(num_hand_cards):
+        pygame.draw.rect(surface, GRAY, (hand_start_x + i * (hand_w + 10), p1_hand_y, hand_w, hand_h), border_radius=8)
+        pygame.draw.rect(surface, DARK_GRAY, (hand_start_x + i * (hand_w + 10), p1_hand_y, hand_w, hand_h), 2,
+                         border_radius=8)
+
+    # Banc
+    bench_total_width = (3 * slot_w) + (2 * gap)
+    bench_start_x = (SCREEN_WIDTH - bench_total_width) / 2
+    for i in range(3):
+        pygame.draw.rect(surface, (10, 150, 120), (bench_start_x + i * (slot_w + gap), p1_bench_y, slot_w, slot_h), 3,
+                         border_radius=10)
+
+    # Actif
+    pygame.draw.rect(surface, (250, 200, 0), (SCREEN_WIDTH / 2 - slot_w / 2, p1_active_y, slot_w, slot_h), 3,
+                     border_radius=10)
+
+    # Deck, Défausse, Énergie
+    deck_area_y = p1_bench_y + (slot_h - 60) / 2
+    pygame.draw.rect(surface, DARK_GRAY, (SCREEN_WIDTH - 230, p1_bench_y, 80, 110), border_radius=5)
+    draw_text("Deck", "small", WHITE, surface, SCREEN_WIDTH - 190, p1_bench_y + 50)
+    pygame.draw.rect(surface, DARK_GRAY, (SCREEN_WIDTH - 120, p1_bench_y, 80, 110), border_radius=5)
+    draw_text("Défausse", "small", WHITE, surface, SCREEN_WIDTH - 80, p1_bench_y + 50)
+    pygame.draw.circle(surface, RED, (SCREEN_WIDTH - 135, p1_hand_y + hand_h / 2 ), 15)  # Energie
+
+    # --- Zones du Joueur 2 (Adversaire - en haut) ---
+    p2_hand_y = gap
+    p2_bench_y = p2_hand_y + hand_h + gap
+    p2_active_y = p2_bench_y + slot_h + gap
+
+    # Main (plus grande)
+    for i in range(num_hand_cards):
+        pygame.draw.rect(surface, BLACK, (hand_start_x + i * (hand_w + 10), p2_hand_y, hand_w, hand_h), border_radius=8)
+
+    # Banc (plus petit)
+    for i in range(3):
+        pygame.draw.rect(surface, (150, 10, 120), (bench_start_x + i * (slot_w + gap), p2_bench_y, slot_w, slot_h), 3,
+                         border_radius=10)
+
+    # Actif (plus petit)
+    pygame.draw.rect(surface, (250, 200, 0), (SCREEN_WIDTH / 2 - slot_w / 2, p2_active_y, slot_w, slot_h), 3,
+                     border_radius=10)
+
+    # Deck, Défausse, Énergie
+    deck_area_y_p2 = p2_bench_y + (slot_h - 60) / 2
+    pygame.draw.rect(surface, DARK_GRAY, (40, p2_bench_y, 80, 110), border_radius=5)
+    draw_text("Défausse", "small", WHITE, surface, 80, p2_bench_y + 50)
+    pygame.draw.rect(surface, DARK_GRAY, (150, p2_bench_y, 80, 110), border_radius=5)
+    draw_text("Deck", "small", WHITE, surface, 190, p2_bench_y + 50)
+    pygame.draw.circle(surface, RED, (135, p2_hand_y + hand_h / 2), 15)  # Energie
+
+    # Message et bouton
+    draw_text(f"Joueur {starting_player} commence la partie !", 'subtitle', WHITE, surface, SCREEN_WIDTH / 2, 20)
     buttons['abandon'].draw(surface)
 
 
